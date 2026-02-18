@@ -1,6 +1,9 @@
 import {inngest} from "@/lib/inngest/client";
-import {PERSONALIZED_WELCOME_EMAIL_PROMPT} from "@/app/api/inngest/prompts";
-import {sendWelcomeEmail} from "@/lib/nodemailer";
+import {PERSONALIZED_WELCOME_EMAIL_PROMPT, NEWS_SUMMARY_EMAIL_PROMPT} from "@/lib/inngest/prompts";
+import {sendWelcomeEmail, sendNewsSummaryEmail} from "@/lib/nodemailer";
+import {getAllUsersForNewsEmail} from "@/lib/actions/user.actions";
+import {getWatchlistSymbolsByEmail} from "@/lib/actions/watchlist.actions";
+import {getNews} from "@/lib/actions/finnhub.actions";
 
 export const sendSignUpEmail = inngest.createFunction(
     {id: 'sign-up-email'},
@@ -44,5 +47,49 @@ export const sendSignUpEmail = inngest.createFunction(
             success: true,
             message: 'Welcome email sent successfully'
         }
+    }
+)
+
+export const sendDailyNewsSummary = inngest.createFunction(
+    { id: 'daily-news-summary' },
+    [ {event: 'app/send.daily.news'}, {cron: 'TZ=Asia/Kolkata 53 11 * * *'}],
+    async ({step}) => {
+        const users = await step.run('get-all-users', getAllUsersForNewsEmail);
+        if (!users || users.length === 0) return { success: false, message: 'No users found' };
+
+        for (const user of users) {
+            const symbols = await step.run(`get-watchlist-${user.id}`, async () => 
+                await getWatchlistSymbolsByEmail(user.email)
+            );
+
+            const news = await step.run(`fetch-news-${user.id}`, async () => {
+                const articles = await getNews(symbols.length > 0 ? symbols : undefined);
+                return articles.slice(0, 6);
+            });
+
+            const summary = await step.ai.infer(`summarize-news-${user.id}`, {
+                model: step.ai.models.gemini({model: 'gemini-2.5-flash-lite'}),
+                body: {
+                    contents: [
+                        {
+                            role: 'user',
+                            parts: [
+                                {
+                                    text: NEWS_SUMMARY_EMAIL_PROMPT.replace('{{newsData}}', JSON.stringify(news))
+                                }
+                            ]
+                        }
+                    ]
+                }
+            });
+
+            await step.run(`send-news-email-${user.id}`, async () => {
+                const part = summary.candidates?.[0]?.content?.parts?.[0];
+                const newsContent = (part && 'text' in part ? part.text : null) || '<p>No news available today.</p>';
+                return await sendNewsSummaryEmail({email: user.email, name: user.name, newsContent});
+            });
+        }
+
+        return { success: true };
     }
 )
