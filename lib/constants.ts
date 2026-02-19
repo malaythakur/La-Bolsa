@@ -171,7 +171,7 @@ export const MARKET_DATA_WIDGET_CONFIG = {
 };
 
 export const SYMBOL_INFO_WIDGET_CONFIG = (symbol: string) => ({
-    symbol: symbol.toUpperCase(),
+    symbol: symbol,
     colorTheme: 'dark',
     isTransparent: true,
     locale: 'en',
@@ -180,59 +180,63 @@ export const SYMBOL_INFO_WIDGET_CONFIG = (symbol: string) => ({
 });
 
 export const CANDLE_CHART_WIDGET_CONFIG = (symbol: string) => ({
-    allow_symbol_change: false,
-    calendar: false,
+    allow_symbol_change: true,
+    calendar: true,
     details: true,
-    hide_side_toolbar: true,
+    hide_side_toolbar: false,
     hide_top_toolbar: false,
     hide_legend: false,
     hide_volume: false,
-    hotlist: false,
+    hotlist: true,
     interval: 'D',
     locale: 'en',
-    save_image: false,
+    save_image: true,
     style: 1,
-    symbol: symbol.toUpperCase(),
+    symbol: symbol,
     theme: 'dark',
     timezone: 'Etc/UTC',
     backgroundColor: '#141414',
     gridColor: '#141414',
     watchlist: [],
-    withdateranges: false,
+    withdateranges: true,
     compareSymbols: [],
-    studies: [],
+    studies: ['RSI@tv-basicstudies', 'MACD@tv-basicstudies'],
     width: '100%',
     height: 600,
+    enable_publishing: false,
+    toolbar_bg: '#141414'
 });
 
 export const BASELINE_WIDGET_CONFIG = (symbol: string) => ({
-    allow_symbol_change: false,
-    calendar: false,
-    details: false,
-    hide_side_toolbar: true,
+    allow_symbol_change: true,
+    calendar: true,
+    details: true,
+    hide_side_toolbar: false,
     hide_top_toolbar: false,
     hide_legend: false,
     hide_volume: false,
-    hotlist: false,
+    hotlist: true,
     interval: 'D',
     locale: 'en',
-    save_image: false,
+    save_image: true,
     style: 10,
-    symbol: symbol.toUpperCase(),
+    symbol: symbol,
     theme: 'dark',
     timezone: 'Etc/UTC',
     backgroundColor: '#141414',
     gridColor: '#141414',
     watchlist: [],
-    withdateranges: false,
+    withdateranges: true,
     compareSymbols: [],
     studies: [],
     width: '100%',
     height: 600,
+    enable_publishing: false,
+    toolbar_bg: '#141414'
 });
 
 export const TECHNICAL_ANALYSIS_WIDGET_CONFIG = (symbol: string) => ({
-    symbol: symbol.toUpperCase(),
+    symbol: symbol,
     colorTheme: 'dark',
     isTransparent: 'true',
     locale: 'en',
@@ -243,7 +247,7 @@ export const TECHNICAL_ANALYSIS_WIDGET_CONFIG = (symbol: string) => ({
 });
 
 export const COMPANY_PROFILE_WIDGET_CONFIG = (symbol: string) => ({
-    symbol: symbol.toUpperCase(),
+    symbol: symbol,
     colorTheme: 'dark',
     isTransparent: 'true',
     locale: 'en',
@@ -252,7 +256,7 @@ export const COMPANY_PROFILE_WIDGET_CONFIG = (symbol: string) => ({
 });
 
 export const COMPANY_FINANCIALS_WIDGET_CONFIG = (symbol: string) => ({
-    symbol: symbol.toUpperCase(),
+    symbol: symbol,
     colorTheme: 'dark',
     isTransparent: 'true',
     locale: 'en',
