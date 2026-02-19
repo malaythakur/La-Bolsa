@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { getDateRange, validateArticle, formatArticle } from '@/lib/utils';
 
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
@@ -58,3 +59,68 @@ export const getNews = async (symbols?: string[]): Promise<MarketNewsArticle[]> 
     throw new Error('Failed to fetch news');
   }
 };
+
+interface FinnhubSearchResult {
+  description: string;
+  displaySymbol: string;
+  symbol: string;
+  type: string;
+}
+
+interface FinnhubSearchResponse {
+  count: number;
+  result: FinnhubSearchResult[];
+}
+
+interface StocksWithWatchlistStatus {
+  symbol: string;
+  name: string;
+  exchange: string;
+  type: string;
+  isInWatchlist: boolean;
+}
+
+interface StockProfile {
+  name: string;
+  exchange: string;
+}
+
+const POPULAR_SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'NVDA', 'META', 'NFLX', 'AMD', 'INTC'];
+
+export const searchStocks = cache(async (query: string = ''): Promise<StocksWithWatchlistStatus[]> => {
+  try {
+    if (!query?.trim()) {
+      const profiles = await Promise.all(
+        POPULAR_SYMBOLS.map(async (symbol) => {
+          const url = `${FINNHUB_BASE_URL}/stock/profile2?symbol=${symbol}&token=${NEXT_PUBLIC_FINNHUB_API_KEY}`;
+          const profile: StockProfile = await fetchJSON(url, 3600);
+          return {
+            symbol,
+            name: profile.name || symbol,
+            exchange: profile.exchange || 'US',
+            type: 'Common Stock',
+            isInWatchlist: false,
+          };
+        })
+      );
+      return profiles;
+    }
+
+    const trimmedQuery = query.trim();
+    const url = `${FINNHUB_BASE_URL}/search?q=${encodeURIComponent(trimmedQuery)}&token=${NEXT_PUBLIC_FINNHUB_API_KEY}`;
+    const data: FinnhubSearchResponse = await fetchJSON(url, 1800);
+
+    const results: FinnhubSearchResult[] = data.result || [];
+    return results.slice(0, 15).map((result) => ({
+      symbol: result.symbol.toUpperCase(),
+      name: result.description,
+      exchange: result.displaySymbol || 'US',
+      type: result.type || 'Stock',
+      isInWatchlist: false,
+    }));
+  } catch (error) {
+    console.error('Error searching stocks:', error);
+    return [];
+  }
+});
+
