@@ -52,7 +52,7 @@ export const sendSignUpEmail = inngest.createFunction(
 
 export const sendDailyNewsSummary = inngest.createFunction(
     { id: 'daily-news-summary' },
-    [ {event: 'app/send.daily.news'}, {cron: 'TZ=Asia/Kolkata 53 11 * * *'}],
+    [ {event: 'app/send.daily.news'}, {cron: 'TZ=Asia/Kolkata 57 12 * * *'}],
     async ({step}) => {
         const users = await step.run('get-all-users', getAllUsersForNewsEmail);
         if (!users || users.length === 0) return { success: false, message: 'No users found' };
