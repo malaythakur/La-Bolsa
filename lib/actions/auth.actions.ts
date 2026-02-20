@@ -11,9 +11,15 @@ export const signUpWithEmail = async({email, password, fullName, country, invest
                 email,
                 password,
                 name: fullName
-            }
+            },
+            headers: await headers()
         })
-        if(response){
+        
+        if(!response) {
+            return {success: false, error: 'Failed to create account'};
+        }
+        
+        try{
             await inngest.send({
                 name: 'app/user.created',
                 data: {
@@ -25,14 +31,17 @@ export const signUpWithEmail = async({email, password, fullName, country, invest
                     preferredIndustry
                 }
             })
+        }catch(inngestError){
+            console.log('Inngest failed but user created:', inngestError);
         }
 
         return {
             success: true, message: 'User created successfully', data: response
         }
     }catch(e){
-        console.log('Sign up failed',e)
-        return {success: false, error: 'Sign up failed'}
+        console.error('Sign up failed:',e)
+        const errorMessage = e instanceof Error ? e.message : 'Sign up failed';
+        return {success: false, error: errorMessage}
     }
 }
 
