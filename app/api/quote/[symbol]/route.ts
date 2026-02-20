@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ symbol: string }> }
 ) {
   const { symbol } = await params;
-  const apiKey = process.env.FINNHUB_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
@@ -13,7 +16,8 @@ export async function GET(
 
   try {
     const res = await fetch(
-      `https://finnhub.io/api/v1/quote?symbol=${symbol.toUpperCase()}&token=${apiKey}`
+      `https://finnhub.io/api/v1/quote?symbol=${symbol.toUpperCase()}&token=${apiKey}`,
+      { cache: 'no-store' }
     );
 
     if (!res.ok) {
