@@ -15,7 +15,15 @@ import {
   COMPANY_FINANCIALS_WIDGET_CONFIG,
 } from '@/lib/constants';
 
-export default function StockDetailsClient({ symbol }: { symbol: string }) {
+export default function StockDetailsClient({ 
+  symbol, 
+  stockData, 
+  isInWatchlist 
+}: { 
+  symbol: string;
+  stockData: any;
+  isInWatchlist: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   const scriptUrl = 'https://s3.tradingview.com/external-embedding/embed-widget-';
 
@@ -58,7 +66,11 @@ export default function StockDetailsClient({ symbol }: { symbol: string }) {
           />
         </div>
         <div className="space-y-6">
-          <WatchlistButton symbol={symbol} />
+          <WatchlistButton 
+            symbol={symbol} 
+            company={stockData?.company || symbol}
+            isInWatchlist={isInWatchlist}
+          />
           <TradingViewWidget
             scriptUrl={`${scriptUrl}technical-analysis.js`}
             config={TECHNICAL_ANALYSIS_WIDGET_CONFIG(symbol)}
